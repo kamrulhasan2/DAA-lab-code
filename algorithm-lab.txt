@@ -1,0 +1,685 @@
+1. Implement binary search procedure using divide and conquer method.
+
+#include <iostream>
+using namespace std;
+
+int binarySearch(int arr[], int left, int right, int target) {
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] == target) {
+            return mid;
+        } else if (arr[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    return -1;
+}
+
+int main() {
+    int n;
+    cout << "Enter the size of the array: ";
+    cin >> n;
+    int arr[n];
+    cout << "Enter "<<n<<" elements in the array (separated by spaces): ";
+    for (int i = 0; i < n; ++i) {
+        cin >> arr[i];
+    }
+    int target;
+    cout << "Enter the target value to search: ";
+    cin >> target;
+    int result = binarySearch(arr, 0, n - 1, target);
+    if (result == -1) {
+        cout << target << " is not present in the array" << endl;
+    } else {
+        cout << target << " is found at index " << result + 1 << endl;
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+2. Implement divide and conquer method for finding the maximum and minimum number.
+
+#include <iostream>
+using namespace std;
+
+void findMinMax(int arr[], int low, int high, int *min, int *max) {
+    int mid, min1, min2, max1, max2;
+    if (low == high) {
+        *min = arr[low];
+        *max = arr[low];
+        return;
+    }
+    if (high == low + 1) {
+        if (arr[low] < arr[high]) {
+            *min = arr[low];
+            *max = arr[high];
+        } else {
+            *min = arr[high];
+            *max = arr[low];
+        }
+        return;
+    }
+    mid = low + (high - low) / 2;
+    findMinMax(arr, low, mid, &min1, &max1);
+    findMinMax(arr, mid + 1, high, &min2, &max2);
+
+    // Compare minimums of two parts
+    if (min1 < min2) *min = min1;
+    else *min = min2;
+    // Compare maximums of two parts
+    if (max1 > max2) *max = max1;
+    else *max = max2;
+}
+
+int main() {
+    int n, min, max;
+    cout << "Enter the size of the array: ";
+    cin >> n;
+    int arr[n];
+    cout << "Enter "<<n<<" elements in the array (separated by spaces): ";
+    for (int i = 0; i < n; ++i) {
+        cin >> arr[i];
+    }
+    findMinMax(arr, 0, n - 1, &min, &max);
+    cout<<"Minimum element is: "<<min<<endl;
+    cout<<"Maximum element is: "<<max<<endl;
+    return 0;
+}
+
+
+
+
+
+
+
+
+3. Write a program to measure the performance using time function between bubble sort and quick sort.
+
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <cstdlib>
+using namespace std;
+
+void bubbleSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n-1; i++) {
+        for (int j = 0; j < n-i-1; j++) {
+            if (arr[j] > arr[j+1]) {
+                swap(arr[j], arr[j+1]);
+            }
+        }
+    }
+}
+
+int partition(vector<int>& arr, int low, int high) {
+    int pivot = arr[high];
+    int i = low - 1;
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    swap(arr[i + 1], arr[high]);
+    return i + 1;
+}
+
+void quickSort(vector<int>& arr, int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
+}
+
+void printArray(const vector<int>& arr) {
+    for (int val : arr) {
+        cout << val << " ";
+    }
+    cout << endl;
+}
+
+vector<int> generateRandomArray(int size) {
+    vector<int> arr(size);
+    for (int i = 0; i < size; ++i) {
+        arr[i] = rand() % 10000;
+    }
+    return arr;
+}
+
+int main() {
+    srand(time(0));
+    int n = 10000;
+    vector<int> arr1 = generateRandomArray(n);
+    vector<int> arr2 = arr1;
+
+    // Measure time for Bubble Sort
+    clock_t start_bubble = clock();
+    bubbleSort(arr1);
+    clock_t end_bubble = clock();
+    double time_bubble = double(end_bubble - start_bubble) / CLOCKS_PER_SEC;
+
+    // Measure time for Quick Sort
+    clock_t start_quick = clock();
+    quickSort(arr2, 0, n - 1);
+    clock_t end_quick = clock();
+    double time_quick = double(end_quick - start_quick) / CLOCKS_PER_SEC;
+
+    cout << "Time taken by Bubble Sort: " << time_bubble << " seconds" << endl;
+    cout << "Time taken by Quick Sort: " << time_quick << " seconds" << endl;
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+4. Implement the fractional knapsack problem that will generate an optimal solution for the given set of instance.
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct Item {
+    int profit;
+    int weight;
+    double density;
+};
+
+bool compareItems(Item a, Item b) {
+    return a.density > b.density;
+}
+
+double fractionalKnapsack(int capacity, vector<Item>& items) {
+    // Sort items by density (profit per unit weight) in descending order
+    sort(items.begin(), items.end(), compareItems);
+    double totalProfit = 0.0;
+    int currentWeight = 0;
+    // Iterate through items
+    for (const Item& item : items) {
+        // If adding the entire item won't exceed the capacity
+        if (currentWeight + item.weight <= capacity) {
+            totalProfit += item.profit;
+            currentWeight += item.weight;
+        } else {
+            // Take a fraction of the item to fill the capacity
+            int remainingWeight = capacity - currentWeight;
+            totalProfit += item.density * remainingWeight;
+            break; // Knapsack is full
+        }
+    }
+    return totalProfit;
+}
+
+int main() {
+    int n;
+    cout << "Number of items: ";
+    cin >> n;
+    int capacity;
+    cout << "Bag size: ";
+    cin >> capacity;
+    cout<<"---------------------"<<endl;
+    cout<<"Enter weight & profit:"<<endl;
+    cout<<"---------------------"<<endl;
+    vector<Item> items(n);
+    for (int i = 0; i < n; ++i) {
+        cout<<i+1;
+        cout<<". Enter weight: ";
+        cin>>items[i].weight;
+        cout<<"   Enter profit : ";
+        cin>>items[i].profit;
+        items[i].density = static_cast<double>(items[i].profit) / items[i].weight;
+    }
+    double maxProfit = fractionalKnapsack(capacity, items);
+    cout<<endl;
+    cout << "Maximum profit: " << maxProfit << endl;
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+5. Implement the 0/1 knapsack problem that will generate an optional solution for the given set of instance such as no. of elements n cost p and weight w.
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct Item {
+    int profit;
+    int weight;
+};
+
+// Comparator function to sort items by profit in descending order
+bool compareItems(Item a, Item b) {
+    return a.profit > b.profit;
+}
+
+int knapsack(int capacity, vector<Item>& items) {
+    // Sort items by profit in descending order
+    sort(items.begin(), items.end(), compareItems);
+    int n = items.size();
+    // Create a 2D array to store the maximum profit for each subproblem
+    vector<vector<int>> dp(n + 1, vector<int>(capacity + 1, 0));
+    // Iterate through items and capacities
+    for (int i = 1; i <= n; ++i) {
+        for (int w = 1; w <= capacity; ++w) {
+            if (items[i - 1].weight <= w) {
+                dp[i][w] = max(dp[i - 1][w], items[i - 1].profit + dp[i - 1][w - items[i - 1].weight]);
+            } else {
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+    return dp[n][capacity];
+}
+
+int main() {
+    int n;
+    cout << "Number of items: ";
+    cin >> n;
+    int capacity;
+    cout << "Bag size: ";
+    cin >> capacity;
+    cout << "---------------------" << endl;
+    cout << "Enter weight & profit:" << endl;
+    cout << "---------------------" << endl;
+    vector<Item> items(n);
+    for (int i = 0; i < n; ++i) {
+        cout << i + 1 << ". Enter weight: ";
+        cin >> items[i].weight;
+        cout << "   Enter profit : ";
+        cin >> items[i].profit;
+    }
+    int maxProfit = knapsack(capacity, items);
+    cout << endl;
+    cout << "Maximum profit: " << maxProfit << endl;
+    return 0;
+}
+
+
+
+
+
+
+
+
+6. Write an algorithm to find the minimum cost spanning tree using prim’s algorithm.
+
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <climits>
+using namespace std;
+
+#define INF INT_MAX
+typedef pair<int, int> iPair;
+
+class Graph {
+    int V;
+    vector<vector<iPair>> adj;
+public:
+    Graph(int V) : V(V) {
+        adj.resize(V + 1);
+    }
+    void addEdge(int u, int v, int w) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    void primMST() {
+        priority_queue<iPair, vector<iPair>, greater<iPair>> pq;
+        vector<int> parent(V + 1, -1);
+        vector<int> key(V + 1, INF);
+        vector<bool> inMST(V + 1, false);
+        int src = 1;
+        pq.push({0, src});
+        key[src] = 0;
+        while (!pq.empty()) {
+            int u = pq.top().second;
+            pq.pop();
+            inMST[u] = true;
+            for (auto& edge : adj[u]) {
+                int v = edge.first;
+                int weight = edge.second;
+                if (!inMST[v] && weight < key[v]) {
+                    key[v] = weight;
+                    pq.push({key[v], v});
+                    parent[v] = u;
+                }
+            }
+        }
+        cout << "Edges in the minimum spanning tree:" << endl;
+        for (int i = 2; i <= V; ++i) {
+            cout << parent[i] << " - " << i << endl;
+        }
+    }
+};
+
+int main() {
+    int V, E;
+    cout << "Enter the number of vertices and edges: ";
+    cin >> V >> E;
+    Graph g(V);
+    cout << "Enter the edges (source, destination, weight):" << endl;
+    for (int i = 0; i < E; ++i) {
+        int u, v, w;
+        cin >> u >> v >> w;
+        g.addEdge(u, v, w);
+    }
+    cout << "Minimum Spanning Tree:" << endl;
+    g.primMST();
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+7. Write a program to find the single source path.
+
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <climits>
+using namespace std;
+
+#define INF INT_MAX
+typedef pair<int, int> iPair;
+
+class Graph {
+    int V;
+    vector<vector<iPair>> adj;
+public:
+    Graph(int V) : V(V) {
+        adj.resize(V + 1);
+    }
+    void addEdge(int u, int v, int w) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    void shortestPath(int src) {
+        priority_queue<iPair, vector<iPair>, greater<iPair>> pq;
+        vector<int> dist(V + 1, INF);
+        pq.push({0, src});
+        dist[src] = 0;
+        while (!pq.empty()) {
+            int u = pq.top().second;
+            pq.pop();
+            for (auto& edge : adj[u]) {
+                int v = edge.first;
+                int weight = edge.second;
+                if (dist[v] > dist[u] + weight) {
+                    dist[v] = dist[u] + weight;
+                    pq.push({dist[v], v});
+                }
+            }
+        }
+        cout << "Shortest distances from vertex " << src << ":" << endl;
+        for (int i = 1; i <= V; ++i) {
+            if (i == src) continue;
+            cout << "Vertex " << i << ": ";
+            if (dist[i] == INF)
+                cout << "No path";
+            else
+                cout << dist[i];
+            cout << endl;
+        }
+    }
+};
+
+int main() {
+    int V, E, src;
+    cout << "Enter the number of vertices and edges: ";
+    cin >> V >> E;
+    Graph g(V);
+    cout << "Enter the edges (source, destination, weight):" << endl;
+    for (int i = 0; i < E; ++i) {
+        int u, v, w;
+        cin >> u >> v >> w;
+        g.addEdge(u, v, w);
+    }
+    cout << "Enter the source vertex: ";
+    cin >> src;
+    g.shortestPath(src);
+    return 0;
+}
+
+
+
+
+
+
+
+
+8. Write a program to implement dynamic programming method for all pair’s shortest path problem.
+
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+#define INF INT_MAX
+
+class Graph {
+    int V;
+    vector<vector<int>> dist;
+public:
+    Graph(int V) : V(V) {
+        dist.resize(V, vector<int>(V, INF));
+        for (int i = 0; i < V; ++i) {
+            dist[i][i] = 0;
+        }
+    }
+    void addEdge(int u, int v, int weight) {
+        dist[u][v] = weight;
+    }
+    void floydWarshall() {
+        for (int k = 0; k < V; ++k) {
+            for (int i = 0; i < V; ++i) {
+                for (int j = 0; j < V; ++j) {
+                    if (dist[i][k] != INF && dist[k][j] != INF && dist[i][k] + dist[k][j] < dist[i][j]) {
+                        dist[i][j] = dist[i][k] + dist[k][j];
+                    }
+                }
+            }
+        }
+        cout << "Shortest distances between all pairs of vertices:" << endl;
+        for (int i = 0; i < V; ++i) {
+            for (int j = 0; j < V; ++j) {
+                if (dist[i][j] == INF) {
+                    cout << "INF ";
+                } else {
+                    cout << dist[i][j] << " ";
+                }
+            }
+            cout << endl;
+        }
+    }
+};
+
+int main() {
+    int V, E;
+    cout << "Enter the number of vertices and edges: ";
+    cin >> V >> E;
+    Graph g(V);
+    cout << "Enter the edges (source, destination, weight):" << endl;
+    for (int i = 0; i < E; ++i) {
+        int u, v, w;
+        cin >> u >> v >> w;
+        g.addEdge(u, v, w);
+    }
+    g.floydWarshall();
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+9. Using backtracking algorithm implement N-queens problem.
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+bool isSafe(vector<vector<int>>& board, int row, int col, int N) {
+    for (int i = 0; i < row; ++i) {
+        if (board[i][col] == 1) {
+            return false;
+        }
+    }
+    for (int i = row, j = col; i >= 0 && j >= 0; --i, --j) {
+        if (board[i][j] == 1) {
+            return false;
+        }
+    }
+    for (int i = row, j = col; i >= 0 && j < N; --i, ++j) {
+        if (board[i][j] == 1) {
+            return false;
+        }
+    }
+    return true;
+}
+bool solveNQueensUtil(vector<vector<int>>& board, int row, int N) {
+    if (row == N) {
+        return true;
+    }
+    for (int col = 0; col < N; ++col) {
+        if (isSafe(board, row, col, N)) {
+            board[row][col] = 1;
+            if (solveNQueensUtil(board, row + 1, N)) {
+                return true;
+            }
+            board[row][col] = 0;
+        }
+    }
+    return false;
+}
+
+void solveNQueens(int N) {
+    vector<vector<int>> board(N, vector<int>(N, 0));
+    if (solveNQueensUtil(board, 0, N)) {
+        cout << "Solution found:" << endl;
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                cout << board[i][j] << " ";
+            }
+            cout << endl;
+        }
+    } else {
+        cout << "No solution found." << endl;
+    }
+}
+
+int main() {
+    int N;
+    cout << "Enter the size of the chessboard (N x N): ";
+    cin >> N;
+    solveNQueens(N);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+10. Write a program for coloring a graph.
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+class Graph {
+    int V;
+    vector<vector<int>> adj;
+
+public:
+    Graph(int V) : V(V) {
+        adj.resize(V);
+    }
+    void addEdge(int u, int v) {
+        if (u < V && v < V) {
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        } else {
+            cerr << "Invalid edge: " << u << " " << v << endl;
+        }
+    }
+    void colorGraph() {
+        vector<int> colors(V, -1);
+        colors[0] = 0;
+        for (int u = 1; u < V; ++u) {
+            vector<bool> available(V, true);
+            for (int v : adj[u]) {
+                if (colors[v] != -1) {
+                    available[colors[v]] = false;
+                }
+            }
+            int cr;
+            for (cr = 0; cr < V; ++cr) {
+                if (available[cr]) {
+                    break;
+                }
+            }
+            colors[u] = cr;
+        }
+        cout << "Vertex\tColor" << endl;
+        for (int i = 0; i < V; ++i) {
+            cout << i << "\t" << colors[i] << endl;
+        }
+    }
+};
+
+int main() {
+    int V, E;
+    cout << "Enter the number of vertices and edges: ";
+    cin >> V >> E;
+    Graph g(V);
+    cout << "Enter the edges (source destination):" << endl;
+    for (int i = 0; i < E; ++i) {
+        int u, v;
+        cin >> u >> v;
+        g.addEdge(u, v);
+    }
+    g.colorGraph();
+    return 0;
+}
